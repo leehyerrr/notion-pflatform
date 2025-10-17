@@ -1,15 +1,4 @@
-import {
-    Button,
-    Input,
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue,
-    Skeleton,
-} from '@/components/ui';
+import { Button, Input, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue, Skeleton } from '@/components/ui';
 import { TOPIC_CATEGORY } from '@/constants/category.constant';
 import { Label } from '@radix-ui/react-label';
 import { ArrowLeft, Asterisk, BookOpenCheck, ImageOff, Save } from 'lucide-react';
@@ -42,11 +31,7 @@ function createTopics() {
                             제목
                         </Label>
                     </div>
-                    <Input
-                        id="title"
-                        placeholder="토픽 제목을 입력하세요."
-                        className="h-16 pl-6 !text-lg placeholder:text-lg placeholder:font-semibold border-0"
-                    />
+                    <Input id="title" placeholder="토픽 제목을 입력하세요." className="h-16 pl-6 !text-lg placeholder:text-lg placeholder:font-semibold border-0" />
                 </div>
                 <div className="flex flex-col gap-2">
                     <div className="flex item-center gap-1">
