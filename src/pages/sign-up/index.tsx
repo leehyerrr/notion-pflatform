@@ -1,10 +1,14 @@
-import { Form, Button, FormControl, FormField, FormItem, FormLabel, FormMessage, Input, Label, Separator, Checkbox } from '@/components/ui';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft, Asterisk, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { NavLink } from 'react-router';
+import { NavLink, useNavigate } from 'react-router';
+import supabase from '@/lib/supabase';
+
 import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+
+import { Form, Button, FormControl, FormField, FormItem, FormLabel, FormMessage, Input, Label, Separator, Checkbox } from '@/components/ui';
+import { ArrowLeft, Asterisk, ChevronRight } from 'lucide-react';
+import { toast } from 'sonner';
 
 const formSchema = z
     .object({
@@ -29,6 +33,8 @@ const formSchema = z
     });
 
 function SignUp() {
+    const navigate = useNavigate();
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -37,8 +43,31 @@ function SignUp() {
             confirmPassword: '',
         },
     });
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values);
+
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        if (!serviceAgreed || !privacyAgreed) {
+            toast.warning('필수 동의항목을 체크해주세요.');
+            return;
+        }
+        const { data, error } = await supabase.auth.signUp({
+            email: values.email,
+            password: values.password,
+        });
+
+        try {
+            if (error) {
+                //에러메시지 -토스트 ui
+                return;
+            }
+            if (data) {
+                toast.success('회원가입을 완료했습니다.');
+                navigate('/sign-in');
+            }
+
+            //js 런타임환경 오류일때
+        } catch (error) {
+            throw new Error(`${error}`);
+        }
     }
 
     const [serviceAgreed, setServiceAgreed] = useState<boolean>(false); // 서비스 이용약관 동의 여부
@@ -91,7 +120,7 @@ function SignUp() {
                                     <FormItem>
                                         <FormLabel>비밀번호 확인</FormLabel>
                                         <FormControl>
-                                            <Input type="confirmPassword" placeholder="비밀번호 확인을 입력하세요." {...field} />
+                                            <Input type="password" placeholder="비밀번호 확인을 입력하세요." {...field} />
                                         </FormControl>
                                         <FormMessage className="text-xs" />
                                     </FormItem>
