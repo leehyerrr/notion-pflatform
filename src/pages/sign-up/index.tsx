@@ -49,19 +49,29 @@ function SignUp() {
             toast.warning('필수 동의항목을 체크해주세요.');
             return;
         }
-        const { data, error } = await supabase.auth.signUp({
+        const {
+            data: { user, session },
+            error,
+        } = await supabase.auth.signUp({
             email: values.email,
             password: values.password,
         });
 
         try {
-            if (error) {
-                //에러메시지 -토스트 ui
-                return;
-            }
-            if (data) {
-                toast.success('회원가입을 완료했습니다.');
-                navigate('/sign-in');
+            if (user && session) {
+                const { data, error } = await supabase
+                    .from('user')
+                    .insert([{ id: user.id, service_agreed: serviceAgreed, privacy_agreed: privacyAgreed, marketing_agreed: marketingAgreed }])
+                    .select();
+
+                if (data) {
+                    toast.success('회원가입을 완료했습니다.');
+                    navigate('/sign-in');
+                }
+                if (error) {
+                    toast.error(error.message);
+                    return;
+                }
             }
 
             //js 런타임환경 오류일때
