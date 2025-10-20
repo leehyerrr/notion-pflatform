@@ -1,7 +1,9 @@
 import { Form, Button, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input } from '@/components/ui';
+import supabase from '@/lib/supabase';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { NavLink } from 'react-router';
+import { NavLink, useNavigate } from 'react-router';
+import { toast } from 'sonner';
 import { z } from 'zod';
 
 const formSchema = z.object({
@@ -14,6 +16,7 @@ const formSchema = z.object({
 });
 
 function SignIn() {
+    const navigate = useNavigate();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -21,10 +24,23 @@ function SignIn() {
             password: '',
         },
     });
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        console.log(values);
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: values.email,
+                password: values.password,
+            });
+            if (error) {
+                toast.error(error.message);
+                return;
+            }
+            if (data) {
+                toast.success('로그인을 성공하였습니다.');
+                navigate('/');
+            }
+        } catch (error) {
+            throw new Error(`${error}`);
+        }
     }
 
     return (

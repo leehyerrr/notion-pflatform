@@ -49,15 +49,16 @@ function SignUp() {
             toast.warning('필수 동의항목을 체크해주세요.');
             return;
         }
-        const {
-            data: { user, session },
-            error,
-        } = await supabase.auth.signUp({
-            email: values.email,
-            password: values.password,
-        });
 
         try {
+            const {
+                data: { user, session },
+                error,
+            } = await supabase.auth.signUp({
+                email: values.email,
+                password: values.password,
+            });
+
             if (user && session) {
                 const { data, error } = await supabase
                     .from('user')
