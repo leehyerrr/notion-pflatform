@@ -1,5 +1,6 @@
 import { Form, Button, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input } from '@/components/ui';
 import supabase from '@/lib/supabase';
+import { useAuthStore } from '@/stores';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { NavLink, useNavigate } from 'react-router';
@@ -24,17 +25,31 @@ function SignIn() {
             password: '',
         },
     });
+
+    const setId = useAuthStore((state) => state.setId);
+    const setEmail = useAuthStore((state) => state.setEmail);
+    const setRole = useAuthStore((state) => state.setRole);
+
     async function onSubmit(values: z.infer<typeof formSchema>) {
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({
+            const {
+                data: { user, session },
+                error,
+            } = await supabase.auth.signInWithPassword({
                 email: values.email,
                 password: values.password,
             });
+
             if (error) {
                 toast.error(error.message);
                 return;
             }
-            if (data) {
+
+            if (user && session) {
+                setId(user.id);
+                setEmail(user.email as string);
+                setRole(user.role as string);
+
                 toast.success('로그인을 성공하였습니다.');
                 navigate('/');
             }
