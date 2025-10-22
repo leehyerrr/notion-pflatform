@@ -1,3 +1,4 @@
+import { AppEditor } from '@/components/common';
 import { Button, Input, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue, Skeleton } from '@/components/ui';
 import { TOPIC_CATEGORY } from '@/constants/category.constant';
 import { Label } from '@radix-ui/react-label';
@@ -40,7 +41,7 @@ function createTopics() {
                             본문
                         </Label>
                     </div>
-                    <Skeleton className="w-full h-100" />
+                    <AppEditor />
                 </div>
             </section>
             <section className="w-1/4 flex flex-col gap-6">
