@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 // export const useBear = create((set) => ({
 //     bears: 0,
@@ -7,27 +8,42 @@ import { create } from 'zustand';
 //     updateBears: (newBears) => set({ bears: newBears }),
 // }));
 
-interface AuthStore {
+interface User {
     id: string;
     email: string;
     role: string;
-    setId: (id: string) => void;
-    setEmail: (email: string) => void;
-    setRole: (role: string) => void;
+}
+
+interface AuthStore {
+    user: User;
+    // setId: (id: string) => void;
+    // setEmail: (email: string) => void;
+    // setRole: (role: string) => void;
+    setUser: (newUser: User) => void;
     reset: () => void;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
-    id: '',
-    email: '',
-    role: '',
+export const useAuthStore = create<AuthStore>()(
+    persist(
+        (set) => ({
+            user: {
+                id: '',
+                email: '',
+                role: '',
+            },
 
-    // setId: (newId) => set((state) => ({ id: newId })),
-    // setEmail: (newEmail) => set((state) => ({ email: newEmail })),
-    // setRole: (newRole) => set((state) => ({ role: newRole })),
-    setId: (newId) => set({ id: newId }),
-    setEmail: (newEmail) => set({ email: newEmail }),
-    setRole: (newRole) => set({ role: newRole }),
+            // setId: (newId) => set((state) => ({ id: newId })),
+            // setEmail: (newEmail) => set((state) => ({ email: newEmail })),
+            // setRole: (newRole) => set((state) => ({ role: newRole })),
 
-    reset: () => set({ id: '', email: '', role: '' }),
-}));
+            // setId: (newId) => set({ id: newId }),
+            // setEmail: (newEmail) => set({ email: newEmail }),
+            // setRole: (newRole) => set({ role: newRole }),
+
+            setUser: (newUser: User) => set({ user: newUser }),
+
+            reset: () => set({ user: { id: '', email: '', role: '' } }),
+        }),
+        { name: 'auth-storage' }
+    )
+);

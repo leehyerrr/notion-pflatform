@@ -26,9 +26,10 @@ function SignIn() {
         },
     });
 
-    const setId = useAuthStore((state) => state.setId);
-    const setEmail = useAuthStore((state) => state.setEmail);
-    const setRole = useAuthStore((state) => state.setRole);
+    const setUser = useAuthStore((state) => state.setUser);
+    // const setId = useAuthStore((state) => state.setId);
+    // const setEmail = useAuthStore((state) => state.setEmail);
+    // const setRole = useAuthStore((state) => state.setRole);
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         try {
@@ -46,9 +47,14 @@ function SignIn() {
             }
 
             if (user && session) {
-                setId(user.id);
-                setEmail(user.email as string);
-                setRole(user.role as string);
+                setUser({
+                    id: user.id,
+                    email: user.email as string,
+                    role: user.role as string,
+                });
+                // setId(user.id);
+                // setEmail(user.email as string);
+                // setRole(user.role as string);
 
                 toast.success('로그인을 성공하였습니다.');
                 navigate('/');
