@@ -7,7 +7,7 @@ import RootLayout from './pages/layout.tsx';
 import App from './pages';
 import SignIn from './pages/sign-in';
 import SignUp from './pages/sign-up';
-import CreateTopics from './pages/topics/create.tsx';
+import CreateTopics from './pages/topics/[topic_id]/create.tsx';
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
@@ -19,7 +19,7 @@ createRoot(document.getElementById('root')!).render(
                         <Route index element={<App />} />
                         <Route path="sign-in" element={<SignIn />} />
                         <Route path="sign-up" element={<SignUp />} />
-                        <Route path="topics/create" element={<CreateTopics />} />
+                        <Route path="topics/:topicId/create" element={<CreateTopics />} />
                     </Route>
                 </Routes>
             </BrowserRouter>

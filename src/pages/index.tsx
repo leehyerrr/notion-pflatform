@@ -3,13 +3,47 @@ import { SkeletonHotTopic, SkeletonNewTopic } from '../components/skeleton';
 import { PencilLine } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useNavigate } from 'react-router';
+import { toast } from 'sonner';
+import { useAuthStore } from '@/stores';
+import supabase from '@/lib/supabase';
 
 function App() {
+    const user = useAuthStore((state) => state.user);
     const navigate = useNavigate();
+    const handleRoute = async () => {
+        if (!user.id || !user.email || !user.role) {
+            toast.warning('토픽 장성은 로그인 후 가능합니다.');
+            return;
+        }
+
+        const { data, error } = await supabase
+            .from('topic')
+            .insert([
+                {
+                    title: null,
+                    content: null,
+                    category: null,
+                    thumbnail: null,
+                    author: user.id,
+                },
+            ])
+            .select();
+
+        console.log(data);
+
+        if (error) {
+            toast.error(error.message);
+            return;
+        }
+        if (data) {
+            toast.success('토픽을 생성하였습니다.');
+            navigate(`/topics/${data[0].id}/create`);
+        }
+    };
     return (
         <main className="w-full h-full min-h-[720px] flex p-6 gap-6">
             <div className="fixed right-1/2 bottom-10 translate-x-1/2 z-20 flex items-center gap-2">
-                <Button variant={'destructive'} className="!py-5 !px-6 rounded-full" onClick={() => navigate('/topics/create')}>
+                <Button variant={'destructive'} className="!py-5 !px-6 rounded-full" onClick={handleRoute}>
                     <PencilLine />
                     나만의 토픽 작성
                 </Button>
