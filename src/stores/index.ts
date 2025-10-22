@@ -42,7 +42,10 @@ export const useAuthStore = create<AuthStore>()(
 
             setUser: (newUser: User) => set({ user: newUser }),
 
-            reset: () => set({ user: { id: '', email: '', role: '' } }),
+            reset: () => {
+                set({ user: { id: '', email: '', role: '' } });
+                localStorage.removeItem('auth-storage');
+            },
         }),
         { name: 'auth-storage' }
     )
