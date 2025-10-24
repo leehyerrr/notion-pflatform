@@ -20,6 +20,7 @@ function App() {
             .from('topic')
             .insert([
                 {
+                    state: 'temp',
                     title: null,
                     content: null,
                     category: null,
