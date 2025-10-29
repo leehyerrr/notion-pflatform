@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores';
 import type { Block } from '@blocknote/core';
 import { Label } from '@radix-ui/react-label';
 import { ArrowLeft, Asterisk, BookOpenCheck, ImageOff, Save } from 'lucide-react';
+import { nanoid } from 'nanoid';
 import { useState } from 'react';
 import { useParams } from 'react-router';
 import { toast } from 'sonner';
@@ -23,14 +24,35 @@ function CreateTopics() {
             toast.warning('제목, 본문, 카테고리, 썸네일을 기입하세요.');
             return;
         }
+
+        console.dir(thumbnail);
+
+        let thumbnailUrl: string | null = null;
+
+        if (thumbnail && thumbnail instanceof File) {
+            const fileExt = thumbnail.name.split('.').pop();
+            const fileName = `${nanoid()}.${fileExt}`;
+            const filePath = `topics/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage.from('files').upload(filePath, thumbnail);
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage.from('files').getPublicUrl(filePath);
+
+            if (!data) throw new Error('썸네일 publick url조회를 실패했습니다.');
+
+            thumbnailUrl = data.publicUrl;
+        }
+
         const { data, error } = await supabase
             .from('topic')
             .update([
                 {
                     title,
-                    content,
+                    content: JSON.stringify(content),
                     category,
-                    thumbnail,
+                    thumbnail: thumbnailUrl,
                     author: user.id,
                 },
             ])
