@@ -1,10 +1,38 @@
 import { Badge, Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Separator } from '@/components/ui';
+import supabase from '@/lib/supabase';
+import { useAuthStore } from '@/stores';
+import { TOPIC_STATUS, type Topic } from '@/types/topic.type';
+import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
+import { toast } from 'sonner';
 
 interface Props {
     children: React.ReactNode;
 }
 
 function AppDraftsDialog({ children }: Props) {
+    const user = useAuthStore((state) => state.user);
+    const navigate = useNavigate();
+    const [drafts, setDrafts] = useState<any[]>([]);
+
+    const fetchDrafts = async () => {
+        try {
+            const { data: topics, error } = await supabase.from('topic').select('*').eq('author', user.id).eq('status', TOPIC_STATUS.TEMP);
+
+            if (error) {
+                toast.error(error.message);
+                return;
+            }
+
+            if (topics) setDrafts(topics);
+        } catch (error) {}
+    };
+
+    useEffect(() => {
+        if (user) fetchDrafts();
+    }, []);
+
     return (
         <Dialog>
             <DialogTrigger asChild>{children}</DialogTrigger>
@@ -16,26 +44,32 @@ function AppDraftsDialog({ children }: Props) {
                 <div className="grid gap-3 py-4">
                     <div className="flex items-center gap-2">
                         <p>임시저장</p>
-                        <p className="text-base text-green-600 -mr-[6px]">7</p>
+                        <p className="text-base text-green-600 -mr-[6px]">{drafts.length}</p>
                         <p>건</p>
                     </div>
-                    <div className="min-h-60 h-60 flex flex-col items-center gap-3 overflow-y-scroll">
-                        <div className="w-full flex items-center justify-between py-2 px-4 gap-3 rounded-md bg-card/50 cursor-pointer">
-                            <div className="flex items-start gap-2">
-                                <Badge className="w-5 h-5 mt-[3px] rounded-sm aspect-square text-foreground bg-[#E26F24] hover:bg-[#E26F24]">2</Badge>
-                                <div className="flex flex-col">
-                                    <p className="line-clamp-1">타이틀 타이틀타이틀타이틀타이틀 타이틀 타이틀 타이틀</p>
-                                    <p className="text-xs text-muted-foreground">작성일: 1111.22.33</p>
+                    <Separator />
+                    {drafts.length > 0 ? (
+                        <div className="min-h-60 h-60 flex flex-col items-center gap-3 overflow-y-scroll">
+                            {drafts.map((draft: Topic, index: number) => (
+                                <div className="w-full flex items-center justify-between py-2 px-4 gap-3 rounded-md bg-card/50 cursor-pointer" onClick={() => navigate(`/topics/${draft.id}/create`)}>
+                                    <div className="flex items-start gap-2">
+                                        <Badge className="w-5 h-5 mt-[3px] rounded-sm aspect-square text-foreground bg-[#E26F24] hover:bg-[#E26F24]">{index + 1}</Badge>
+                                        <div className="flex flex-col">
+                                            <p className="line-clamp-1">{draft.title}</p>
+                                            <p className="text-xs text-muted-foreground">작성일: {dayjs(draft.created_at).format('YYYY. MM. DD')}</p>
+                                        </div>
+                                    </div>
+                                    <Badge variant={'outline'}>작성중</Badge>
                                 </div>
-                            </div>
-                            <Badge variant={'outline'}>작성중</Badge>
+                            ))}
                         </div>
-                    </div>
-                    <div className="min-h-60 flex items-center justify-center">
-                        <p className="text-muted-foreground/50">조회 가능한 정보가 없습니다.</p>
-                    </div>
+                    ) : (
+                        <div className="min-h-60 flex items-center justify-center">
+                            <p className="text-muted-foreground/50">조회 가능한 정보가 없습니다.</p>
+                        </div>
+                    )}
                 </div>
-                <Separator />
+
                 <DialogFooter>
                     <DialogClose asChild>
                         <Button type="button" variant="outline" className="border-0">

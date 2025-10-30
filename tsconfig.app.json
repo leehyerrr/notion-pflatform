@@ -20,7 +20,7 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
+    "erasableSyntaxOnly": false,/* 타입 선언(.d.ts) 생성 시 제거 가능한 구문만 포함하겠다 */
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
 
