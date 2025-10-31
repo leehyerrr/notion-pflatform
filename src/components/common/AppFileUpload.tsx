@@ -14,8 +14,9 @@ function AppFileUpload({ file, onChange }: Props) {
         e.target.value = '';
     };
     const handleRenderPreview = () => {
+        console.log(typeof file);
         if (typeof file === 'string') {
-            <img src={file} alt="@THUMBNAIL" className="w-full aspect-video rounded-lg object-cover border" />;
+            return <img src={file} alt="@THUMBNAIL" className="w-full aspect-video rounded-lg object-cover border" />;
         } else if (file instanceof File) {
             return <img src={URL.createObjectURL(file)} alt="@THUMBNAIL" className="w-full aspect-video rounded-lg object-cover border" />;
         }

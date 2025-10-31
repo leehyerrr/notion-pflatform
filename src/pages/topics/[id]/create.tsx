@@ -3,12 +3,13 @@ import { Button, Input, Select, SelectContent, SelectGroup, SelectItem, SelectLa
 import { TOPIC_CATEGORY } from '@/constants/category.constant';
 import supabase from '@/lib/supabase';
 import { useAuthStore } from '@/stores';
+import { TOPIC_STATUS } from '@/types/topic.type';
 import type { Block } from '@blocknote/core';
 import { Label } from '@radix-ui/react-label';
 import { ArrowLeft, Asterisk, BookOpenCheck, ImageOff, Save } from 'lucide-react';
 import { nanoid } from 'nanoid';
-import { useState } from 'react';
-import { useParams } from 'react-router';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
 
 function CreateTopics() {
@@ -18,8 +19,81 @@ function CreateTopics() {
     const [content, setContent] = useState<Block[]>([]);
     const [category, setCategory] = useState<string>('');
     const [thumbnail, setThumbnail] = useState<File | string | null>(null);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        fetchTopic();
+    }, []);
+
+    const fetchTopic = async () => {
+        try {
+            const { data: topic, error } = await supabase.from('topic').select('*').eq('id', id);
+
+            if (error) {
+                toast.error(error.message);
+                return;
+            }
+
+            if (topic) {
+                setTitle(topic[0].title);
+                setContent(JSON.parse(topic[0].content));
+                setCategory(topic[0].category);
+                setThumbnail(topic[0].thumbnail);
+            }
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    };
 
     const handleSave = async () => {
+        if (!title && !content && !category && !thumbnail) {
+            toast.warning('제목, 본문, 카테고리, 썸네일을 기입하세요.');
+            return;
+        }
+
+        let thumbnailUrl: string | null = null;
+
+        if (thumbnail && thumbnail instanceof File) {
+            const fileExt = thumbnail.name.split('.').pop();
+            const fileName = `${nanoid()}.${fileExt}`;
+            const filePath = `topics/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage.from('files').upload(filePath, thumbnail);
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage.from('files').getPublicUrl(filePath);
+
+            if (!data) throw new Error('썸네일 publick url조회를 실패했습니다.');
+
+            thumbnailUrl = data.publicUrl;
+        }
+
+        const { data, error } = await supabase
+            .from('topic')
+            .update([
+                {
+                    title,
+                    content: JSON.stringify(content),
+                    category,
+                    thumbnail: thumbnailUrl,
+                    author: user.id,
+                    status: TOPIC_STATUS.TEMP,
+                },
+            ])
+            .eq('id', id)
+            .select();
+
+        if (error) {
+            toast.error(error.message);
+            return;
+        }
+        if (data) {
+            toast.success('작성 중인 토픽을 저장하였습니다.');
+        }
+    };
+    const handlePublish = async () => {
         if (!title && !content && !category && !thumbnail) {
             toast.warning('제목, 본문, 카테고리, 썸네일을 기입하세요.');
             return;
@@ -54,6 +128,7 @@ function CreateTopics() {
                     category,
                     thumbnail: thumbnailUrl,
                     author: user.id,
+                    status: TOPIC_STATUS.PUBLISH,
                 },
             ])
             .eq('id', id)
@@ -64,13 +139,8 @@ function CreateTopics() {
             return;
         }
         if (data) {
-            toast.success('작성 중인 토픽을 저장하였습니다.');
-        }
-    };
-    const handlePublish = async () => {
-        if (!title || !content || !category || !thumbnail) {
-            toast.warning('제목, 본문, 카테고리, 썸네일은 필수값입니다.');
-            return;
+            toast.success('작성글을 발행하였습니다.');
+            navigate('/');
         }
     };
     return (
@@ -115,7 +185,7 @@ function CreateTopics() {
                             본문
                         </Label>
                     </div>
-                    <AppEditor setContent={setContent} />
+                    <AppEditor props={content} setContent={setContent} />
                 </div>
             </section>
             <section className="w-1/4 flex flex-col gap-6">
@@ -128,7 +198,7 @@ function CreateTopics() {
                         <Asterisk size={14} className="text-[#F96859]" />
                         <Label className="text-muted-foreground">카테고리</Label>
                     </div>
-                    <Select onValueChange={(value) => setCategory(value)}>
+                    <Select value={category} onValueChange={(value) => setCategory(value)}>
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="토픽(주제) 선택" />
                         </SelectTrigger>
@@ -151,7 +221,6 @@ function CreateTopics() {
                         <Asterisk size={14} className="text-[#F96859]" />
                         <Label className="text-muted-foreground">썸네일</Label>
                     </div>
-                    <Skeleton className="w-full aspect-video" />
                     <AppFileUpload file={thumbnail} onChange={setThumbnail} />
                     <Button
                         variant="outline"
