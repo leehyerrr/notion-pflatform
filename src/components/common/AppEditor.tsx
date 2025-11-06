@@ -8,10 +8,11 @@ import { useEffect } from 'react';
 
 interface Props {
     props?: Block[];
-    setContent: (content: Block[]) => void;
+    setContent?: (content: Block[]) => void;
+    readonly?: boolean;
 }
 
-function AppEditor({ props, setContent }: Props) {
+function AppEditor({ props, setContent, readonly }: Props) {
     const locale = ko;
     const editor = useCreateBlockNote({
         dictionary: {
@@ -32,7 +33,17 @@ function AppEditor({ props, setContent }: Props) {
             }
         }
     }, [props, editor]);
-    return <BlockNoteView editor={editor} onChange={() => setContent(editor.document)} />;
+    return (
+        <BlockNoteView
+            editor={editor}
+            editable={!readonly}
+            onChange={() => {
+                if (!readonly) {
+                    setContent?.(editor.document);
+                }
+            }}
+        />
+    );
 }
 
 export { AppEditor };
