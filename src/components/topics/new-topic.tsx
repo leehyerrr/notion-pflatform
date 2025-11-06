@@ -1,0 +1,64 @@
+import type { Topic } from '@/types/topic.type';
+import { Card, Separator } from '../ui';
+import { CaseSensitive } from 'lucide-react';
+import dayjs from 'dayjs';
+
+interface Props {
+    props: Topic;
+}
+
+function extractTextFromContent(content: string | any[], maxChars = 200) {
+    try {
+        const parsed = typeof content === 'string' ? JSON.parse(content) : content;
+
+        if (!Array.isArray(parsed)) {
+            console.warn('content 데이터 타입이 배열이 아닙니다.');
+            return '';
+        }
+
+        let result = '';
+
+        for (const block of parsed) {
+            if (Array.isArray(block.content)) {
+                for (const child of block.content) {
+                    if (child?.text) {
+                        result += child.text + ' ';
+
+                        if (result.length >= maxChars) {
+                            return result.slice(0, maxChars) + '...';
+                        }
+                    }
+                }
+            }
+        }
+        return result.trim();
+    } catch (error) {
+        console.log('콘텐츠 파싱 실패: ', error);
+        return '';
+    }
+}
+
+function NewTopicCard({ props }: Props) {
+    console.log(props.thumbnail);
+    return (
+        <Card className="w-full h-fit p-4 gap-4">
+            <div className="flex items-start gap-4">
+                <div className="flex-1 flex flex-col items-start gap-4">
+                    <h3 className="h-16 text-base font-semibold tracking-tight line-clamp-2">
+                        <CaseSensitive size={16} className="text-muted-foreground" />
+                        <p>{props.title}</p>
+                    </h3>
+                    <p className="line-clamp-3 text-muted-foreground">{extractTextFromContent(props.content)}</p>
+                </div>
+                <img src={props.thumbnail} alt="" className="w-[140px] h-[140px] aspect-square rounded-lg object-cover" />
+            </div>
+            <Separator className="bg-accent" />
+            <div className="w-full flex item-center justify-between">
+                <div>개발자</div>
+                <div>{dayjs(props.created_at).format('YYYY. MM. DD')}</div>
+            </div>
+        </Card>
+    );
+}
+
+export { NewTopicCard };

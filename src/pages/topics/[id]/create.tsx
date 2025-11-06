@@ -68,6 +68,9 @@ function CreateTopics() {
             if (!data) throw new Error('썸네일 publick url조회를 실패했습니다.');
 
             thumbnailUrl = data.publicUrl;
+        } else if (typeof thumbnail === 'string') {
+            // 기존 이미지 유지
+            thumbnailUrl = thumbnail;
         }
 
         const { data, error } = await supabase
@@ -117,6 +120,9 @@ function CreateTopics() {
             if (!data) throw new Error('썸네일 publick url조회를 실패했습니다.');
 
             thumbnailUrl = data.publicUrl;
+        } else if (typeof thumbnail === 'string') {
+            // 기존 이미지 유지
+            thumbnailUrl = thumbnail;
         }
 
         const { data, error } = await supabase

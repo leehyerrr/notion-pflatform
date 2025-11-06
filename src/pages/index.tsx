@@ -6,10 +6,32 @@ import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/stores';
 import supabase from '@/lib/supabase';
+import type { Topic } from '@/types/topic.type';
+import { useEffect, useState } from 'react';
+import { NewTopicCard } from '@/components/topics';
 
 function App() {
     const user = useAuthStore((state) => state.user);
     const navigate = useNavigate();
+    const [topics, setTopics] = useState<Topic[]>([]);
+
+    const fetchTopics = async () => {
+        try {
+            const { data: topics, error } = await supabase.from('topic').select('*').eq('status', 'publish');
+
+            if (topics) {
+                setTopics(topics);
+            }
+            if (error) {
+                toast.error(error.message);
+                return;
+            }
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    };
+
     const handleRoute = async () => {
         if (!user.id || !user.email || !user.role) {
             toast.warning('토픽 장성은 로그인 후 가능합니다.');
@@ -41,6 +63,11 @@ function App() {
             navigate(`/topics/${data[0].id}/create`);
         }
     };
+
+    useEffect(() => {
+        fetchTopics();
+    }, []);
+
     return (
         <main className="w-full h-full min-h-[720px] flex p-6 gap-6">
             <div className="fixed right-1/2 bottom-10 translate-x-1/2 z-20 flex gap-2 items-center">
@@ -84,12 +111,20 @@ function App() {
                         </div>
                         <p className="text-muted-foreground md:text-base">새로운 시선으로, 새로운 이야기를 시작하세요. 지금 바로 당신만의 토픽을 작성해보세요.</p>
                     </div>
-                    <div className="grid grid-cols-2 gap-6">
-                        <SkeletonNewTopic />
-                        <SkeletonNewTopic />
-                        <SkeletonNewTopic />
-                        <SkeletonNewTopic />
-                    </div>
+
+                    {topics.length > 0 ? (
+                        <div className="grid grid-cols-2 gap-6">
+                            {topics
+                                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                                .map((topic: Topic) => {
+                                    return <NewTopicCard props={topic} />;
+                                })}
+                        </div>
+                    ) : (
+                        <div className="w-full min-h-120 flex items-center justify-center">
+                            <p className="text-muted-foreground/50">조회 가능한 토픽이 없습니다.</p>
+                        </div>
+                    )}
                 </div>
             </section>
         </main>

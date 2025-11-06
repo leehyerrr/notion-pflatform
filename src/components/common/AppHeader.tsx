@@ -26,7 +26,7 @@ function AppHeader() {
                 {user.email ? (
                     <div className="flex items-center gap-5">
                         <span>{user.email}</span>
-                        <Separator orientation="vertical" className="!h4" />
+                        <Separator orientation="vertical" className="!h-4" />
                         <span onClick={reset}>로그아웃</span>
                     </div>
                 ) : (

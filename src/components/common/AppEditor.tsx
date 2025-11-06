@@ -24,7 +24,6 @@ function AppEditor({ props, setContent }: Props) {
 
     useEffect(() => {
         if (props && props.length > 0) {
-            console.log(props);
             const current = JSON.stringify(editor.document);
             const next = JSON.stringify(props);
 
