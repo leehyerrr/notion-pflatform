@@ -1,6 +1,19 @@
 import { AppEditor } from '@/components/common';
-import { Button, Separator } from '@/components/ui';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+    Button,
+    Separator,
+} from '@/components/ui';
 import supabase from '@/lib/supabase';
+import { useAuthStore } from '@/stores';
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
@@ -9,6 +22,9 @@ import { toast } from 'sonner';
 function TopicDetail() {
     const navigate = useNavigate();
     const { id } = useParams();
+    const user = useAuthStore((state) => state.user);
+
+    const [author, setAuthor] = useState<string>('');
     const [category, setCategory] = useState<string>('');
     const [title, setTitle] = useState<string>('');
     const [thumbnail, setThumbnail] = useState<string>('');
@@ -24,11 +40,28 @@ function TopicDetail() {
             }
             if (topic) {
                 console.log(topic);
+                setAuthor(topic[0].author);
                 setTitle(topic[0].title);
                 setCategory(topic[0].category);
                 setThumbnail(topic[0].thumbnail);
                 setContent(topic[0].content);
             }
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    };
+
+    const handleDelete = async () => {
+        try {
+            const { error } = await supabase.from('topic').delete().eq('id', id);
+
+            if (error) {
+                toast.error(error.message);
+                return;
+            }
+            toast.success('토픽을 삭제하였습니다.');
+            navigate('/');
         } catch (error) {
             console.log(error);
             throw error;
@@ -51,9 +84,27 @@ function TopicDetail() {
                     >
                         <ArrowLeft />
                     </Button>
-                    <Button variant="outline" size="icon" className="!bg-red-800/50">
-                        <Trash2 />
-                    </Button>
+                    {author === user?.id && (
+                        <AlertDialog>
+                            <AlertDialogTrigger>
+                                <Button variant="outline" size="icon" className="!bg-red-800/50">
+                                    <Trash2 />
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>정말 해당 토픽을 삭제하시겠습니까?</AlertDialogTitle>
+                                    <AlertDialogDescription>삭제하시면 해당 토픽의 모든 내용이 영구적으로 삭제되어 복구할 수 없습니다.</AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>닫기</AlertDialogCancel>
+                                    <AlertDialogAction className="bg-red-800/50 text-foreground hover:bg-red-700/50" onClick={handleDelete}>
+                                        삭제
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    )}
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-transparent to-transparent"></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent"></div>
