@@ -9,6 +9,7 @@ import SignIn from './pages/sign-in';
 import SignUp from './pages/sign-up';
 import CreateTopics from './pages/topics/[id]/create.tsx';
 import './index.css';
+import TopicDetail from './pages/topics/[id]/detail.tsx';
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
@@ -20,6 +21,7 @@ createRoot(document.getElementById('root')!).render(
                         <Route path="sign-in" element={<SignIn />} />
                         <Route path="sign-up" element={<SignUp />} />
                         <Route path="topics/:id/create" element={<CreateTopics />} />
+                        <Route path="topics/:id/detail" element={<TopicDetail />} />
                     </Route>
                 </Routes>
             </BrowserRouter>

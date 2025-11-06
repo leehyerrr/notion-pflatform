@@ -2,6 +2,7 @@ import type { Topic } from '@/types/topic.type';
 import { Card, Separator } from '../ui';
 import { CaseSensitive } from 'lucide-react';
 import dayjs from 'dayjs';
+import { useNavigate } from 'react-router';
 
 interface Props {
     props: Topic;
@@ -39,9 +40,9 @@ function extractTextFromContent(content: string | any[], maxChars = 200) {
 }
 
 function NewTopicCard({ props }: Props) {
-    console.log(props.thumbnail);
+    const navigate = useNavigate();
     return (
-        <Card className="w-full h-fit p-4 gap-4">
+        <Card className="w-full h-fit p-4 gap-4" onClick={() => navigate(`/topics/${props.id}/detail`)}>
             <div className="flex items-start gap-4">
                 <div className="flex-1 flex flex-col items-start gap-4">
                     <h3 className="h-16 text-base font-semibold tracking-tight line-clamp-2">
